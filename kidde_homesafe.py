@@ -1,9 +1,10 @@
-from enum import StrEnum, auto
+"""A slim python wrapper of the Kidde HomeSafe private API."""
+
 from dataclasses import dataclass
-from typing import Optional, Any, Literal
+from enum import StrEnum, auto
+from typing import Any, Literal
 
 import aiohttp
-
 
 _API_PREFIX = "https://api.homesafe.kidde.com/api/v4"
 
@@ -43,15 +44,16 @@ class KiddeDataset:
     ----------
     locations : dict[int, dict[str, Any]]
         Dicts of location data, keyed by id.
-    devices : Optional[dict[int, dict[str, Any]]]
+    devices : dict[int, dict[str, Any]] | None
         Dicts of device data, keyed by id. None if not requested.
-    events : Optional[dict[int, dict[str, Any]]]
+    events : dict[int, dict[str, Any]] | None
         Dicts of event data, keyed by id. None if not requested.
+
     """
 
     locations: dict[int, dict[str, Any]]
-    devices: Optional[dict[int, dict[str, Any]]]
-    events: Optional[dict[int, dict[str, Any]]]
+    devices: dict[int, dict[str, Any]] | None
+    events: dict[int, dict[str, Any]] | None
 
 
 class KiddeClient:
@@ -87,6 +89,7 @@ class KiddeClient:
         -------
         Any
             Response JSON data.
+
         """
         url = f"{_API_PREFIX}/{path}"
         async with aiohttp.request(method, url, cookies=self.cookies) as response:
@@ -113,6 +116,7 @@ class KiddeClient:
         -------
         KiddeDataset
             Dataset of locations, devices, and events.
+
         """
         location_list = await self._request("location")
         locations = _dict_by_ids(location_list)
@@ -144,6 +148,7 @@ class KiddeClient:
             Device ID.
         command : KiddeCommand
             Command to send.
+
         """
         await self._request(
             f"location/{location_id}/device/{device_id}/{command}", "POST"
